@@ -1,4 +1,4 @@
-const jwt = required("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req , res , next) =>{
     try{
