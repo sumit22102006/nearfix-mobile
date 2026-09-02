@@ -52,9 +52,7 @@ const Register = () => {
     useState(false);
 
 
-  // ========================================
-  // REGISTER
-  // ========================================
+
 
   const handleRegister = async () => {
 

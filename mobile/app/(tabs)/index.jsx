@@ -21,6 +21,7 @@ import { TestimonialsSection } from "../../components/home/TestimonialsSection";
 import { CTASection } from "../../components/home/CTASection";
 import { HomeFooter } from "../../components/home/HomeFooter";
 
+
 // Put your NEW/rotated Google API key here locally.
 // Do NOT paste it into GitHub or send it in chat.
 const GOOGLE_API_KEY = "YOUR_NEW_GOOGLE_API_KEY";
@@ -276,6 +277,7 @@ const HomeScreen = () => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
 
           <HeroSection
@@ -301,17 +303,13 @@ const HomeScreen = () => {
           />
 
           <CategoriesSection
-            onViewAll={() =>
-              console.log(
-                "View all categories"
-              )
-            }
-            onCategoryPress={(cat) =>
-              console.log(
-                "Category pressed:",
-                cat
-              )
-            }
+            onViewAll={() => {
+              console.log("View all categories");
+            }}
+            onCategoryPress={(category) => {
+              console.log("Category pressed:", category);
+              router.push("/recommendation");
+            }}
           />
 
           <WhyChooseUsSection />

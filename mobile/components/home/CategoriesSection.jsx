@@ -27,6 +27,7 @@ export const CategoriesSection = ({ onViewAll, onCategoryPress }) => {
         horizontal 
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
       >
         {categories.map((item) => {
           const IconComponent = item.provider;
