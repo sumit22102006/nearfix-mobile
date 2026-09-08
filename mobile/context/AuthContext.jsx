@@ -81,8 +81,13 @@ export const AuthProvider = ({ children }) => {
       }
 
 
-      const data =
-        await response.json();
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        throw new Error("Server did not return a valid JSON response");
+      }
 
 
       setToken(savedToken);
@@ -133,8 +138,13 @@ export const AuthProvider = ({ children }) => {
       );
 
 
-      const data =
-        await response.json();
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        throw new Error("Server did not return a valid JSON response");
+      }
 
 
       if (!response.ok) {
@@ -218,8 +228,13 @@ export const AuthProvider = ({ children }) => {
       );
 
 
-      const data =
-        await response.json();
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        throw new Error("Server did not return a valid JSON response");
+      }
 
 
       if (!response.ok) {

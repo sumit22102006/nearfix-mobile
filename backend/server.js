@@ -5,7 +5,21 @@ const dotenv = require("dotenv");
 
 const  connectDB = require("./configure/db");
 
-const authRoutes = require("./routes/authRoutes");
+
+// Routes 
+
+
+const authRoutes =
+ require("./routes/authRoutes");
+
+const categoryRoutes = 
+require("./routes/categoryRoute");
+
+const providerRoutes = 
+require("./routes/providerRoutes");
+
+const adminRoutes =
+  require("./routes/adminRoutes");
 
 dotenv.config();
 
@@ -28,13 +42,32 @@ app.get("/", (req, res) => {
 
 });
 
+// ROUTES API
+
 app.use(
   "/api/auth",
   authRoutes
 );
+
+app.use(
+  "/api/categoies",
+  categoryRoutes
+)
+
+app.use(
+  "/api/providers",
+  providerRoutes
+);
+
+app.use(
+  "/api/admin",
+  adminRoutes
+);
+
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
