@@ -153,10 +153,40 @@ export default function AdminDashboardScreen() {
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </Pressable>
 
+        <View style={{ marginTop: 24, marginBottom: 40 }}>
+          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          {stats.recentActivity?.map((activity, index) => {
+            const { icon, color, bg } = getActivityIcon(activity.type);
+            return (
+              <View key={index} style={styles.activityItem}>
+                <View style={[styles.activityIcon, { backgroundColor: bg }]}>
+                  <Ionicons name={icon} size={18} color={color} />
+                </View>
+                <View style={styles.activityInfo}>
+                  <Text style={styles.activityTitle}>{activity.title}</Text>
+                  <Text style={styles.activityDesc}>{activity.description}</Text>
+                </View>
+                <Text style={styles.activityTime}>
+                  {new Date(activity.date).toLocaleDateString()}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const getActivityIcon = (type) => {
+  switch (type) {
+    case 'new_user': return { icon: 'person-add', color: '#3B82F6', bg: '#DBEAFE' };
+    case 'new_provider': return { icon: 'briefcase', color: '#8B5CF6', bg: '#EDE9FE' };
+    case 'new_booking': return { icon: 'calendar', color: '#10B981', bg: '#D1FAE5' };
+    default: return { icon: 'notifications', color: '#6B7280', bg: '#F3F4F6' };
+  }
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -271,4 +301,38 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
   },
+  activityItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+  },
+  activityIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  activityInfo: {
+    flex: 1,
+  },
+  activityTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  activityDesc: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  activityTime: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginLeft: 8,
+  }
 });

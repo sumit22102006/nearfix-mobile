@@ -139,7 +139,7 @@ const Booking = require("../models/Booking");
 const Category = require("../models/Category");
 
 // ==========================================
-// GET DASHBOARD STATS
+// GET DASHBOARD STATS & ACTIVITY
 // ==========================================
 const getDashboardStats = async (req, res) => {
   try {
@@ -148,11 +148,38 @@ const getDashboardStats = async (req, res) => {
     const totalBookings = await Booking.countDocuments();
     const totalCategories = await Category.countDocuments();
 
+    // Fetch recent users for activity feed
+    const recentUsers = await User.find().sort({ createdAt: -1 }).limit(3).select('name createdAt roles');
+    
+    // Fetch recent bookings for activity feed
+    const recentBookings = await Booking.find().sort({ createdAt: -1 }).limit(3)
+      .populate('userId', 'name')
+      .populate('providerId', 'businessName');
+
+    // Combine and sort activities
+    const activities = [
+      ...recentUsers.map(u => ({
+        id: u._id,
+        type: u.roles.includes('provider') ? 'new_provider' : 'new_user',
+        title: u.roles.includes('provider') ? `New Professional Joined` : `New User Registered`,
+        description: `${u.name} just created an account.`,
+        date: u.createdAt
+      })),
+      ...recentBookings.map(b => ({
+        id: b._id,
+        type: 'new_booking',
+        title: `New Service Booked`,
+        description: `${b.userId?.name} booked ${b.providerId?.businessName}`,
+        date: b.createdAt
+      }))
+    ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+
     res.json({
       totalUsers,
       totalProviders,
       totalBookings,
-      totalCategories
+      totalCategories,
+      recentActivity: activities
     });
   } catch (error) {
     console.error("Dashboard stats error:", error);
