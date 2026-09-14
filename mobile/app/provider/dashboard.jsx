@@ -101,7 +101,7 @@ export default function ProviderDashboardScreen() {
           
           <View style={styles.statCard}>
             <Ionicons name="document-text-outline" size={28} color="#6366F1" />
-            <Text style={styles.statValue}>{provider.reviewsCount || 0}</Text>
+            <Text style={styles.statValue}>{provider.totalReviews || 0}</Text>
             <Text style={styles.statLabel}>Reviews</Text>
           </View>
         </View>

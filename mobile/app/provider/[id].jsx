@@ -12,11 +12,13 @@ export default function ProviderDetailsScreen() {
   
   const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    const fetchProvider = async () => {
+    const fetchProviderData = async () => {
       try {
         setLoading(true);
+        // Fetch provider
         const response = await fetch(`${API_URL}/api/providers/${id}`);
         const text = await response.text();
         let data;
@@ -32,6 +34,22 @@ export default function ProviderDetailsScreen() {
         } else {
           Alert.alert("Error", "Provider not found");
           router.back();
+          return;
+        }
+
+        // Fetch reviews
+        const reviewRes = await fetch(`${API_URL}/api/reviews/provider/${id}`);
+        const reviewText = await reviewRes.text();
+        let reviewData;
+        try {
+          reviewData = JSON.parse(reviewText);
+        } catch (e) {
+          console.warn("Server returned non-JSON for reviews");
+          return;
+        }
+        
+        if (reviewRes.ok && reviewData.reviews) {
+          setReviews(reviewData.reviews);
         }
       } catch (error) {
         console.error("Fetch provider error:", error);
@@ -42,7 +60,7 @@ export default function ProviderDetailsScreen() {
     };
 
     if (id) {
-      fetchProvider();
+      fetchProviderData();
     }
   }, [id]);
 
@@ -138,6 +156,47 @@ export default function ProviderDetailsScreen() {
               {provider.location?.address || "Location not provided"}
             </Text>
           </View>
+        </View>
+
+        {/* Reviews Section */}
+        <View style={styles.section}>
+          <View style={styles.reviewsHeader}>
+            <Text style={styles.sectionTitle}>Reviews ({reviews.length})</Text>
+            {user && (
+              <Pressable 
+                onPress={() => router.push(`/provider/review/create?providerId=${provider._id}&businessName=${provider.businessName}`)}
+              >
+                <Text style={styles.writeReviewText}>Write a Review</Text>
+              </Pressable>
+            )}
+          </View>
+
+          {reviews.length === 0 ? (
+            <Text style={styles.noReviewsText}>No reviews yet.</Text>
+          ) : (
+            reviews.map((review) => (
+              <View key={review._id} style={styles.reviewCard}>
+                <View style={styles.reviewHeader}>
+                  <View style={styles.reviewAvatar}>
+                    <Text style={styles.reviewAvatarText}>
+                      {review.userId?.name?.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={styles.reviewAuthor}>
+                    <Text style={styles.reviewAuthorName}>{review.userId?.name}</Text>
+                    <Text style={styles.reviewDate}>
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <View style={styles.reviewRatingBadge}>
+                    <Ionicons name="star" size={14} color="#F59E0B" />
+                    <Text style={styles.reviewRatingText}>{review.rating}</Text>
+                  </View>
+                </View>
+                <Text style={styles.reviewComment}>{review.comment}</Text>
+              </View>
+            ))
+          )}
         </View>
       </ScrollView>
 
@@ -340,5 +399,79 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  reviewsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  writeReviewText: {
+    color: '#F47D5B',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  noReviewsText: {
+    color: '#6B7280',
+    fontStyle: 'italic',
+    marginTop: 8,
+  },
+  reviewCard: {
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    paddingTop: 16,
+    marginTop: 16,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  reviewAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  reviewAvatarText: {
+    color: '#4F46E5',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  reviewAuthor: {
+    flex: 1,
+  },
+  reviewAuthorName: {
+    fontWeight: '600',
+    color: '#111827',
+    fontSize: 14,
+  },
+  reviewDate: {
+    color: '#9CA3AF',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  reviewRatingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  reviewRatingText: {
+    color: '#D97706',
+    fontWeight: '700',
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  reviewComment: {
+    color: '#4B5563',
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 4,
   },
 });
