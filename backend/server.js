@@ -21,6 +21,9 @@ require("./routes/providerRoutes");
 const adminRoutes =
   require("./routes/adminRoutes");
 
+const bookingRoutes = 
+  require("./routes/bookingRoutes");
+
 dotenv.config();
 
 
@@ -64,6 +67,10 @@ app.use(
   adminRoutes
 );
 
+app.use(
+  "/api/bookings",
+  bookingRoutes
+);
 
 const PORT = process.env.PORT || 5000;
 

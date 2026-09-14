@@ -69,7 +69,7 @@ export default function ProfileScreen() {
           </Pressable>
         )}
 
-        <Pressable style={styles.menuItem} onPress={() => alert("Bookings coming in Phase 4")}>
+        <Pressable style={styles.menuItem} onPress={() => router.push('/booking/my-bookings')}>
           <View style={styles.menuItemLeft}>
             <Ionicons name="calendar-outline" size={24} color="#10B981" />
             <Text style={styles.menuItemText}>My Bookings</Text>

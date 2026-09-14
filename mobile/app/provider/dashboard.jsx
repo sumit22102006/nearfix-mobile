@@ -108,21 +108,12 @@ export default function ProviderDashboardScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Manage Bookings</Text>
-          <Pressable style={styles.menuItem} onPress={() => alert("Incoming requests coming in Phase 4")}>
+          <Pressable style={styles.menuItem} onPress={() => router.push('/booking/provider-bookings')}>
             <View style={styles.menuItemLeft}>
               <View style={[styles.iconBox, { backgroundColor: '#FEF2F2' }]}>
                 <Ionicons name="calendar" size={20} color="#EF4444" />
               </View>
-              <Text style={styles.menuText}>Incoming Requests</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </Pressable>
-          <Pressable style={styles.menuItem} onPress={() => alert("Past bookings coming in Phase 4")}>
-            <View style={styles.menuItemLeft}>
-              <View style={[styles.iconBox, { backgroundColor: '#F0FDF4' }]}>
-                <Ionicons name="checkmark-done" size={20} color="#10B981" />
-              </View>
-              <Text style={styles.menuText}>Completed Jobs</Text>
+              <Text style={styles.menuText}>Incoming Requests & Jobs</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
           </Pressable>
