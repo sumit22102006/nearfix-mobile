@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, ActivityIndicator, Pressable, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, ActivityIndicator, Pressable, Switch, Alert, Modal, TextInput, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import API_URL from '../../api/config';
@@ -9,6 +9,9 @@ export default function AdminCategoriesScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newCat, setNewCat] = useState({ name: '', description: '', icon: 'construct' });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -62,6 +65,41 @@ export default function AdminCategoriesScreen() {
     }
   };
 
+  const handleCreateCategory = async () => {
+    if (!newCat.name.trim()) {
+      Alert.alert("Error", "Category name is required.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const token = await AsyncStorage.getItem('adminToken');
+      const response = await fetch(`${API_URL}/api/admin/categories`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newCat),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setModalVisible(false);
+        setNewCat({ name: '', description: '', icon: 'construct' });
+        fetchCategories(); // Refresh list
+        Alert.alert("Success", "Category created successfully.");
+      } else {
+        Alert.alert("Error", data.message || "Failed to create category.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -98,6 +136,55 @@ export default function AdminCategoriesScreen() {
           ))
         )}
       </ScrollView>
+
+      <Pressable style={styles.fab} onPress={() => setModalVisible(true)}>
+        <Ionicons name="add" size={32} color="#FFFFFF" />
+      </Pressable>
+
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>New Category</Text>
+              <Pressable onPress={() => setModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#111827" />
+              </Pressable>
+            </View>
+
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Plumber"
+              value={newCat.name}
+              onChangeText={(text) => setNewCat({ ...newCat, name: text })}
+            />
+
+            <Text style={styles.label}>Description</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Expert plumbing services"
+              value={newCat.description}
+              onChangeText={(text) => setNewCat({ ...newCat, description: text })}
+            />
+
+            <Text style={styles.label}>Icon (Ionicons name)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. construct, water, flash"
+              value={newCat.icon}
+              onChangeText={(text) => setNewCat({ ...newCat, icon: text })}
+            />
+
+            <Pressable 
+              style={[styles.submitButton, submitting && { opacity: 0.7 }]} 
+              onPress={handleCreateCategory}
+              disabled={submitting}
+            >
+              {submitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitButtonText}>Create Category</Text>}
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -114,5 +201,14 @@ const styles = StyleSheet.create({
   categoryName: { fontSize: 16, fontWeight: '700', color: '#111827' },
   categoryDesc: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   toggleContainer: { alignItems: 'flex-end' },
-  toggleText: { fontSize: 10, color: '#9CA3AF', marginBottom: 4, fontWeight: '600' }
+  toggleText: { fontSize: 10, color: '#9CA3AF', marginBottom: 4, fontWeight: '600' },
+  fab: { position: 'absolute', bottom: 30, right: 30, width: 60, height: 60, borderRadius: 30, backgroundColor: '#111827', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 8 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 24 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: '#111827' },
+  label: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
+  input: { backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 16, height: 52, fontSize: 16, color: '#111827', marginBottom: 16 },
+  submitButton: { backgroundColor: '#F47D5B', height: 56, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginTop: 8 },
+  submitButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' }
 });
