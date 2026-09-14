@@ -21,10 +21,8 @@ import { TestimonialsSection } from "../../components/home/TestimonialsSection";
 import { CTASection } from "../../components/home/CTASection";
 import { HomeFooter } from "../../components/home/HomeFooter";
 
-
-// Put your NEW/rotated Google API key here locally.
-// Do NOT paste it into GitHub or send it in chat.
-const GOOGLE_API_KEY = "YOUR_NEW_GOOGLE_API_KEY";
+// Use environment variable for Google API Key
+const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY || "";
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -43,8 +41,7 @@ const HomeScreen = () => {
 
   const getCurrentLocation = async () => {
     try {
-      const { status } =
-        await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
         Alert.alert(

@@ -251,7 +251,7 @@ const searchServiceProvider =
 
             const categoryData =
                 await Category.findOne({
-                    slug:
+                    name:
                         category.toLowerCase(),
                     isActive: true,
                 });
@@ -387,6 +387,27 @@ const searchServiceProvider =
 
 
 // =====================================================
+// GET PROVIDER BY ID
+// =====================================================
+
+const getProviderById = async (req, res) => {
+    try {
+        const provider = await ServiceProvider.findById(req.params.id)
+            .populate("categoryId", "name icon")
+            .populate("userId", "name email phone");
+
+        if (!provider) {
+            return res.status(404).json({ message: "Professional not found" });
+        }
+
+        return res.json({ provider });
+    } catch (error) {
+        console.error("Get provider by id error:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+
+// =====================================================
 // EXPORT
 // =====================================================
 
@@ -394,4 +415,5 @@ module.exports = {
     becomeProfessional,
     getMyProviderProfile,
     searchServiceProvider,
+    getProviderById,
 };

@@ -1,19 +1,34 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-
-const categories = [
-  { id: '1', name: 'Electrician', icon: 'electrical-services', provider: MaterialIcons },
-  { id: '2', name: 'Plumber', icon: 'plumbing', provider: MaterialIcons },
-  { id: '3', name: 'AC Repair', icon: 'ac-unit', provider: MaterialIcons },
-  { id: '4', name: 'Cleaning', icon: 'cleaning-services', provider: MaterialIcons },
-  { id: '5', name: 'Carpenter', icon: 'hammer-wrench', provider: MaterialCommunityIcons },
-  { id: '6', name: 'Painting', icon: 'format-paint', provider: MaterialIcons },
-  { id: '7', name: 'Appliance', icon: 'kitchen', provider: MaterialIcons },
-  { id: '8', name: 'Pest Control', icon: 'pest-control', provider: MaterialIcons },
-];
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import API_URL from '../../api/config';
 
 export const CategoriesSection = ({ onViewAll, onCategoryPress }) => {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/categories`);
+        const data = await response.json();
+        
+        const categoriesData = data.categories || data.categoies;
+        if (response.ok && categoriesData) {
+          setCategories(categoriesData);
+        } else {
+          setCategories([]);
+        }
+      } catch (error) {
+        console.log("Error fetching categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -23,28 +38,41 @@ export const CategoriesSection = ({ onViewAll, onCategoryPress }) => {
         </Pressable>
       </View>
 
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        {categories.map((item) => {
-          const IconComponent = item.provider;
-          return (
-            <Pressable 
-              key={item.id} 
-              style={({pressed}) => [styles.card, pressed && styles.cardPressed]}
-              onPress={() => onCategoryPress(item.name)}
-            >
-              <View style={styles.iconContainer}>
-                <IconComponent name={item.icon} size={28} color="#F47D5B" />
-              </View>
-              <Text style={styles.cardText} numberOfLines={1}>{item.name}</Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color="#F47D5B" />
+        </View>
+      ) : categories.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No categories available.</Text>
+        </View>
+      ) : (
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          {categories.map((item) => {
+            // Default icon if none provided
+            const iconName = item.icon || "build";
+            return (
+              <Pressable 
+                key={item._id} 
+                style={({pressed}) => [styles.card, pressed && styles.cardPressed]}
+                onPress={() => onCategoryPress(item)}
+              >
+                <View style={styles.iconContainer}>
+                  <MaterialIcons name={iconName} size={28} color="#F47D5B" />
+                </View>
+                <Text style={styles.cardText} numberOfLines={1}>
+                  {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -107,5 +135,19 @@ const styles = StyleSheet.create({
     color: '#171717',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  loadingContainer: {
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: 'gray',
+    fontSize: 14,
   },
 });

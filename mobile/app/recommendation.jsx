@@ -1,29 +1,86 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, FlatList, SafeAreaView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-
-const servicesList = [
-  { id: '1', name: 'Electrician', emoji: '👷‍♂️', color: '#E0F2FE' },
-  { id: '2', name: 'Dog Walker', emoji: '🐕‍🦺', color: '#FEF3C7' },
-  { id: '3', name: 'Doctor', emoji: '👩🏻‍⚕️', color: '#F3E8FF' },
-  { id: '4', name: 'Tutor', emoji: '👨🏻‍🏫', color: '#F3F4F6' },
-  { id: '5', name: 'Baby Sitter', emoji: '🤱🏼', color: '#D1FAE5' },
-  { id: '6', name: 'Pest Control', emoji: '🐞', color: '#FFEDD5' },
-  { id: '7', name: 'Handyman', emoji: '🛠️', color: '#F1F5F9' },
-  { id: '8', name: 'Home Cleaner', emoji: '🏠', color: '#FEF3C7' },
-  { id: '9', name: 'Plumber', emoji: '🧑‍🔧', color: '#E0E7FF' },
-  { id: '10', name: 'Barber', emoji: '💇‍♂️', color: '#E0F2FE' },
-  { id: '11', name: 'Carpenter', emoji: '🪚', color: '#E0F2FE' },
-  { id: '12', name: 'Massage', emoji: '💆‍♂️', color: '#F3F4F6' },
-];
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator, SafeAreaView, Image } from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import API_URL from '../api/config';
 
 export default function RecommendationScreen() {
   const router = useRouter();
-  const [search, setSearch] = useState('');
+  const params = useLocalSearchParams();
+  const { category, service, latitude, longitude, location } = params;
 
-  const filteredServices = servicesList.filter(s => 
-    s.name.toLowerCase().includes(search.toLowerCase())
+  const [providers, setProviders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // If no category is directly passed, try to use service as category
+  const searchCategory = category || service || "Plumber";
+
+  useEffect(() => {
+    const searchProviders = async () => {
+      try {
+        setLoading(true);
+        let url = `${API_URL}/api/providers/search?category=${encodeURIComponent(searchCategory)}`;
+        
+        if (latitude && longitude) {
+          url += `&latitude=${latitude}&longitude=${longitude}`;
+        }
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (response.ok && data.providers) {
+          setProviders(data.providers);
+        } else {
+          setProviders([]);
+        }
+      } catch (error) {
+        console.error("Search error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    searchProviders();
+  }, [searchCategory, latitude, longitude]);
+
+  const renderProvider = ({ item }) => (
+    <Pressable 
+      style={styles.card}
+      onPress={() => router.push(`/provider/${item._id}`)}
+    >
+      <View style={styles.cardHeader}>
+        <View style={styles.avatarContainer}>
+          <MaterialIcons name="person" size={32} color="#F47D5B" />
+        </View>
+        <View style={styles.cardInfo}>
+          <Text style={styles.businessName}>{item.businessName}</Text>
+          <Text style={styles.providerName}>{item.userId?.name}</Text>
+          <View style={styles.ratingRow}>
+            <Ionicons name="star" size={14} color="#F59E0B" />
+            <Text style={styles.ratingText}>
+              {item.rating || "New"} ({item.reviewsCount || 0} reviews)
+            </Text>
+          </View>
+        </View>
+        <View style={styles.priceContainer}>
+          <Text style={styles.price}>${item.price}</Text>
+          <Text style={styles.priceLabel}>/hr</Text>
+        </View>
+      </View>
+
+      <View style={styles.cardFooter}>
+        <View style={styles.footerItem}>
+          <Ionicons name="location-outline" size={16} color="#6B7280" />
+          <Text style={styles.footerText} numberOfLines={1}>
+            {item.location?.address || "Unknown location"}
+          </Text>
+        </View>
+        <View style={styles.footerItem}>
+          <Ionicons name="briefcase-outline" size={16} color="#6B7280" />
+          <Text style={styles.footerText}>{item.experience} yrs exp</Text>
+        </View>
+      </View>
+    </Pressable>
   );
 
   return (
@@ -32,42 +89,31 @@ export default function RecommendationScreen() {
         <Pressable onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#171717" />
         </Pressable>
-        <Text style={styles.headerTitle}>Ask for Recommendation</Text>
-      </View>
-
-      <View style={styles.content}>
-        <Text style={styles.title}>
-          What <Text style={styles.highlight}>services</Text> are you looking for?
-        </Text>
-
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Find a service"
-            placeholderTextColor="#9CA3AF"
-            value={search}
-            onChangeText={setSearch}
-          />
+        <View>
+          <Text style={styles.headerTitle}>Results for "{searchCategory}"</Text>
+          {location ? <Text style={styles.headerSubtitle}>{location}</Text> : null}
         </View>
-
-        <FlatList
-          data={filteredServices}
-          keyExtractor={(item) => item.id}
-          numColumns={3}
-          showsVerticalScrollIndicator={false}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={styles.gridContent}
-          renderItem={({ item }) => (
-            <Pressable style={styles.card}>
-              <View style={[styles.circle, { backgroundColor: item.color }]}>
-                <Text style={styles.emoji}>{item.emoji}</Text>
-              </View>
-              <Text style={styles.cardName}>{item.name}</Text>
-            </Pressable>
-          )}
-        />
       </View>
+
+      {loading ? (
+        <View style={styles.centerContent}>
+          <ActivityIndicator size="large" color="#F47D5B" />
+          <Text style={styles.loadingText}>Finding best professionals...</Text>
+        </View>
+      ) : providers.length === 0 ? (
+        <View style={styles.centerContent}>
+          <Ionicons name="search-outline" size={64} color="#D1D5DB" />
+          <Text style={styles.emptyText}>No professionals found in this area.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={providers}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.listContent}
+          renderItem={renderProvider}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -75,14 +121,17 @@ export default function RecommendationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F9FAFB',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 10,
+    paddingBottom: 15,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
   backButton: {
     width: 40,
@@ -95,70 +144,111 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#171717',
   },
-  content: {
+  headerSubtitle: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  centerContent: {
     flex: 1,
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#171717',
-    marginTop: 20,
-    lineHeight: 40,
-    letterSpacing: -0.5,
-  },
-  highlight: {
-    color: '#F47D5B',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 52,
-    marginTop: 24,
-    marginBottom: 24,
-  },
-  searchIcon: {
-    marginRight: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#171717',
-    height: '100%',
-  },
-  gridContent: {
-    paddingBottom: 40,
-  },
-  row: {
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  card: {
-    width: '30%',
-    alignItems: 'center',
-  },
-  circle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    padding: 20,
   },
-  emoji: {
-    fontSize: 32,
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#6B7280',
   },
-  cardName: {
+  emptyText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  listContent: {
+    padding: 16,
+    gap: 16,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  avatarContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#FFF9F7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  cardInfo: {
+    flex: 1,
+  },
+  businessName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 2,
+  },
+  providerName: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingText: {
     fontSize: 12,
     color: '#4B5563',
-    textAlign: 'center',
+    marginLeft: 4,
     fontWeight: '500',
+  },
+  priceContainer: {
+    alignItems: 'flex-end',
+  },
+  price: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#F47D5B',
+  },
+  priceLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    paddingTop: 12,
+    gap: 16,
+  },
+  footerItem: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  footerText: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginLeft: 6,
   },
 });

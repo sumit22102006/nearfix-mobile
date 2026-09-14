@@ -94,6 +94,8 @@ const Login = () => {
 
 
       // Login successful
+      // The root _layout.jsx will automatically handle the redirection 
+      // when the user state updates in AuthContext, or we can explicitly route to tabs:
       router.replace("/(tabs)");
 
     } catch (error) {

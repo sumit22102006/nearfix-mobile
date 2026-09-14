@@ -4,6 +4,7 @@ const{
     becomeProfessional,
     getMyProviderProfile,
     searchServiceProvider,
+    getProviderById,
 } = require("../controller/providerController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -25,7 +26,6 @@ router.post(
     becomeProfessional
 );
 
-
 // MY PROVIDER PROFILE
 
 router.get(
@@ -34,5 +34,11 @@ router.get(
     getMyProviderProfile
 );
 
-module.exports = router
+// GET SINGLE PROVIDER
+router.get(
+    "/:id",
+    getProviderById
+);
+
+module.exports = router;
 

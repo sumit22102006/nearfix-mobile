@@ -8,7 +8,7 @@ import React, {
 import AsyncStorage from
   "@react-native-async-storage/async-storage";
 
-import { API_URI as API_URL } from "../api/config";
+import API_URL from "../api/config";
 
 
 // ==========================================
@@ -311,6 +311,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         token,
         loading,
         login,

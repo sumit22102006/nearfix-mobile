@@ -30,69 +30,33 @@ export default function AdminDashboard() {
       "adminUser"
     );
 
-    router.replace(
-      "/admin/login"
-    );
+    router.replace("/admin/login");
   };
 
 
   return (
-
     <View style={styles.container}>
 
       <Text style={styles.title}>
-        NearFix Admin Dashboard
+        🔐 NEARFIX ADMIN
+      </Text>
+
+      <Text style={styles.subtitle}>
+        ADMIN DASHBOARD
+      </Text>
+
+      <Text style={styles.message}>
+        You are logged in as Admin
       </Text>
 
 
-      <View style={styles.card}>
-
-        <Text style={styles.cardTitle}>
-          Users
-        </Text>
-
-        <Text style={styles.value}>
-          0
-        </Text>
-
-      </View>
-
-
-      <View style={styles.card}>
-
-        <Text style={styles.cardTitle}>
-          Professionals
-        </Text>
-
-        <Text style={styles.value}>
-          0
-        </Text>
-
-      </View>
-
-
-      <View style={styles.card}>
-
-        <Text style={styles.cardTitle}>
-          Bookings
-        </Text>
-
-        <Text style={styles.value}>
-          0
-        </Text>
-
-      </View>
-
-
       <TouchableOpacity
-        style={styles.logout}
+        style={styles.button}
         onPress={logout}
       >
-
-        <Text style={styles.logoutText}>
+        <Text style={styles.buttonText}>
           Logout
         </Text>
-
       </TouchableOpacity>
 
     </View>
@@ -104,44 +68,37 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    padding: 20,
-    paddingTop: 60,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#FFF9F7",
+    padding: 20,
   },
 
   title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    marginBottom: 30,
-  },
-
-  card: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 15,
-  },
-
-  cardTitle: {
-    fontSize: 16,
-    color: "gray",
-  },
-
-  value: {
     fontSize: 30,
     fontWeight: "bold",
-    marginTop: 5,
   },
 
-  logout: {
-    backgroundColor: "black",
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
+  subtitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+
+  message: {
+    fontSize: 16,
     marginTop: 20,
   },
 
-  logoutText: {
+  button: {
+    backgroundColor: "black",
+    paddingVertical: 15,
+    paddingHorizontal: 50,
+    borderRadius: 10,
+    marginTop: 30,
+  },
+
+  buttonText: {
     color: "white",
     fontWeight: "bold",
   },

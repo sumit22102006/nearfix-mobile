@@ -1,124 +1,52 @@
-import {
-  Stack,
-  useRouter,
-  useSegments,
-} from "expo-router";
-
+import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
-
-import {
-  AuthProvider,
-  useAuth,
-} from "../context/AuthContext";
-
-
-// ==========================================
-// INITIAL LAYOUT
-// ==========================================
+import { AuthProvider, useAuth } from "../context/AuthContext";
 
 function InitialLayout() {
-
-  const {
-    user,
-    loading,
-  } = useAuth();
+  const { user, loading } = useAuth();
 
   const segments = useSegments();
-
   const router = useRouter();
 
-
   useEffect(() => {
-
-    // --------------------------------------
-    // Wait until authentication is checked
-    // --------------------------------------
-
     if (loading) return;
+    if (!segments || segments.length === 0) return;
 
+    const firstSegment = segments[0];
 
-    // --------------------------------------
-    // Normal authentication pages
-    // --------------------------------------
-
-    const inAuthGroup =
-      segments[0] === "login" ||
-      segments[0] === "register";
-
-
-    // --------------------------------------
-    // Admin pages
-    // --------------------------------------
-
-    const inAdminGroup =
-      segments[0] === "admin";
-
-
-    // --------------------------------------
-    // ADMIN AREA
-    // --------------------------------------
-    //
-    // Don't apply normal user authentication
-    // redirects to admin pages.
-    //
-    // Admin authentication will be handled
-    // separately inside /admin.
-    //
-
-    if (inAdminGroup) {
+    // =========================
+    // ADMIN ROUTES
+    // =========================
+    if (firstSegment === "admin") {
       return;
     }
 
-
-    // --------------------------------------
-    // NORMAL USER NOT LOGGED IN
-    // --------------------------------------
+    // =========================
+    // NORMAL USER AUTH
+    // =========================
+    const inAuthGroup =
+      firstSegment === "login" ||
+      firstSegment === "register";
 
     if (!user && !inAuthGroup) {
-
       router.replace("/login");
-
       return;
     }
-
-
-    // --------------------------------------
-    // NORMAL USER ALREADY LOGGED IN
-    // --------------------------------------
 
     if (user && inAuthGroup) {
-
       router.replace("/(tabs)");
-
       return;
     }
-
-  }, [
-    user,
-    loading,
-    segments,
-  ]);
-
+  }, [user, loading, segments]);
 
   return (
-
     <Stack>
-
-      {/* ================================ */}
-      {/* NORMAL USER APP */}
-      {/* ================================ */}
-
       <Stack.Screen
         name="(tabs)"
         options={{
           headerShown: false,
         }}
       />
-
-
-      {/* ================================ */}
-      {/* NORMAL USER LOGIN */}
-      {/* ================================ */}
 
       <Stack.Screen
         name="login"
@@ -127,34 +55,12 @@ function InitialLayout() {
         }}
       />
 
-
-      {/* ================================ */}
-      {/* NORMAL USER REGISTER */}
-      {/* ================================ */}
-
       <Stack.Screen
         name="register"
         options={{
           headerShown: false,
         }}
       />
-
-
-      {/* ================================ */}
-      {/* ADMIN */}
-      {/* ================================ */}
-
-      <Stack.Screen
-        name="admin"
-        options={{
-          headerShown: false,
-        }}
-      />
-
-
-      {/* ================================ */}
-      {/* OTHER SCREENS */}
-      {/* ================================ */}
 
       <Stack.Screen
         name="modal"
@@ -163,7 +69,6 @@ function InitialLayout() {
         }}
       />
 
-
       <Stack.Screen
         name="recommendation"
         options={{
@@ -171,23 +76,20 @@ function InitialLayout() {
         }}
       />
 
+      <Stack.Screen
+        name="admin"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }
 
-
-// ==========================================
-// ROOT LAYOUT
-// ==========================================
-
 export default function RootLayout() {
-
   return (
-
     <AuthProvider>
-
       <InitialLayout />
-
     </AuthProvider>
   );
 }
