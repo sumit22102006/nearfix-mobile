@@ -2,6 +2,11 @@ const express = require("express");
 
 const {
   adminLogin,
+  getDashboardStats,
+  getAllUsers,
+  getAllProviders,
+  createCategory,
+  toggleCategory,
 } = require("../controller/adminController");
 
 const authMiddleware =
@@ -24,23 +29,12 @@ router.post(
 );
 
 
-// ==========================================
-// ADMIN TEST
-// ==========================================
-
-router.get(
-  "/test",
-  authMiddleware,
-  adminMiddleware,
-  (req, res) => {
-
-    res.json({
-      message:
-        "Welcome to NearFix Admin",
-    });
-
-  }
-);
+// Protected Admin Routes
+router.get("/stats", authMiddleware, adminMiddleware, getDashboardStats);
+router.get("/users", authMiddleware, adminMiddleware, getAllUsers);
+router.get("/providers", authMiddleware, adminMiddleware, getAllProviders);
+router.post("/categories", authMiddleware, adminMiddleware, createCategory);
+router.put("/categories/:id/toggle", authMiddleware, adminMiddleware, toggleCategory);
 
 
 module.exports = router;

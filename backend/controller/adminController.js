@@ -134,6 +134,101 @@ const adminLogin = async (req, res) => {
 };
 
 
+const ServiceProvider = require("../models/serviceProvider");
+const Booking = require("../models/Booking");
+const Category = require("../models/Category");
+
+// ==========================================
+// GET DASHBOARD STATS
+// ==========================================
+const getDashboardStats = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const totalProviders = await ServiceProvider.countDocuments();
+    const totalBookings = await Booking.countDocuments();
+    const totalCategories = await Category.countDocuments();
+
+    res.json({
+      totalUsers,
+      totalProviders,
+      totalBookings,
+      totalCategories
+    });
+  } catch (error) {
+    console.error("Dashboard stats error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ==========================================
+// GET ALL USERS
+// ==========================================
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password").sort({ createdAt: -1 });
+    res.json({ users });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ==========================================
+// GET ALL PROVIDERS
+// ==========================================
+const getAllProviders = async (req, res) => {
+  try {
+    const providers = await ServiceProvider.find()
+      .populate("userId", "name email phone")
+      .populate("categoryId", "name")
+      .sort({ createdAt: -1 });
+    res.json({ providers });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ==========================================
+// CREATE CATEGORY
+// ==========================================
+const createCategory = async (req, res) => {
+  try {
+    const { name, description, icon } = req.body;
+    
+    if (!name) return res.status(400).json({ message: "Category name is required" });
+
+    const existing = await Category.findOne({ name });
+    if (existing) return res.status(400).json({ message: "Category already exists" });
+
+    const category = await Category.create({ name, description, icon, isActive: true });
+    res.status(201).json({ message: "Category created", category });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ==========================================
+// TOGGLE CATEGORY
+// ==========================================
+const toggleCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const category = await Category.findById(id);
+    if (!category) return res.status(404).json({ message: "Category not found" });
+
+    category.isActive = !category.isActive;
+    await category.save();
+
+    res.json({ message: "Category toggled", category });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   adminLogin,
+  getDashboardStats,
+  getAllUsers,
+  getAllProviders,
+  createCategory,
+  toggleCategory
 };
