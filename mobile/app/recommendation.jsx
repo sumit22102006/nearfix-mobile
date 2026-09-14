@@ -26,7 +26,14 @@ export default function RecommendationScreen() {
         }
 
         const response = await fetch(url);
-        const data = await response.json();
+        const text = await response.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.warn("Server returned non-JSON:", text.substring(0, 50));
+          return;
+        }
 
         if (response.ok && data.providers) {
           setProviders(data.providers);

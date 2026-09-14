@@ -20,7 +20,14 @@ export default function ProviderDashboardScreen() {
             Authorization: `Bearer ${user?.token}`,
           },
         });
-        const data = await response.json();
+        const text = await response.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.warn("Server returned non-JSON:", text.substring(0, 50));
+          return;
+        }
         
         if (response.ok && data.provider) {
           setProvider(data.provider);

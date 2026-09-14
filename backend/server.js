@@ -50,7 +50,7 @@ app.use(
 );
 
 app.use(
-  "/api/categoies",
+  "/api/categories",
   categoryRoutes
 )
 
